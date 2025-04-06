@@ -33,20 +33,39 @@ Deltay = rf(2)-r0(2); % km
 % 1. Half orbital period
 
 t_vector1 = linspace(0, tau/2, 1000); % time vector (s)
+t_vector2 = linspace(0, 2*tau, 2000); % time vector 2 (s) 
 
 for i = 1:length(t_vector1)
     t = t_vector1(i); % time (s)
     PHI=CW_TransMat(omega,t); % compute the CW matrices
     Phi_rr = PHI(1:3,1:3); % position-to-position state transition matrix
     Phi_rv = PHI(1:3,4:6); % position-to-velocity state transition matrix
-    r(:,i) = Phi_rr*r0 + Phi_rv*v0; % compute the relative position (km)
+    r1(:,i) = Phi_rr*r0 + Phi_rv*DV1/1000; % compute the relative position (km)
+end
+
+for i = 1:length(t_vector2)
+    t = t_vector2(i); % time (s)
+    PHI=CW_TransMat(omega,t); % compute the CW matrices
+    Phi_rr = PHI(1:3,1:3); % position-to-position state transition matrix
+    Phi_rv = PHI(1:3,4:6); % position-to-velocity state transition matrix
+    r2(:,i) = Phi_rr*r0 + Phi_rv*DV1/1000; % compute the relative position (km)
 end
 
 figure;
-plot(r(1,:),r(2,:),'b','LineWidth',2); % plot the trajectory
+plot(r1(1,:),r1(2,:),'b','LineWidth',2); % plot the trajectory
 xlabel('x (R-bar direction) [km]');
 ylabel('y (V-bar direction) [km]');
 title('Relative Trajectory of the Spacecraft');
+grid on;
+axis equal;
+set(gca, 'FontSize', 12, 'FontName', 'Arial');
+legend('Trajectory', 'Location', 'best');
+
+figure;
+plot(r2(1,:),r2(2,:),'b','LineWidth',2); % plot the trajectory
+xlabel('x (R-bar direction) [km]');
+ylabel('y (V-bar direction) [km]');
+title('Relative Trajectory of the Spacecraft for two orbital periods');
 grid on;
 axis equal;
 set(gca, 'FontSize', 12, 'FontName', 'Arial');

@@ -5,8 +5,8 @@ function [DV1,DV2]=hopping(omega,Deltay)
     % Deltay - change in y position (km)
     
     % Outputs:
-    % DV1 - first impulse velocity change (km/s)
-    % DV2 - second impulse velocity change (km/s)
+    % DV1 - first impulse velocity change (m/s)
+    % DV2 - second impulse velocity change (m/s)
 
     %% Data
 
@@ -39,12 +39,12 @@ function [DV1,DV2]=hopping(omega,Deltay)
     vF_plus = zeros(3,1); % km/s; zeros since both the chaser and target are at the end in the same circular orbit
 
     % 6. Velocity change for the first impulse
-    DV1 = v0_plus - v0_minus; % km/s
-    DV1 = norm(DV1); % km/s; magnitude of the velocity change
+    DV1 = (v0_plus - v0_minus) * 1000; % m/s
+
 
     % 7. Velocity change for the second impulse
-    DV2 = vF_plus - vf_minus; % km/s
-    DV2 = norm(DV2); % km/s; magnitude of the velocity change
+    DV2 = (vF_plus - vf_minus) * 1000; % m/s
+
 
 
     function [Phi_rr, Phi_rv, Phi_vr, Phi_vv] = CW_matrices(n, t)
