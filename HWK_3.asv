@@ -23,21 +23,14 @@ t = tau/2; % time of maneuver (s)
 
 %% a.) Compute the two-impulse maneuver for the hop using the simplified CW equations
 omega = n;
-Deltay = (rf(2)-r0(2))*1000; %m
+Deltay = (rf(2)-r0(2)) * 1000; %m
 [DV1,DV2]=hopping(omega, Deltay);
 
-% Print the vectors and their respective magnitudes
-fprintf('Delta-V1 vector: [%f, %f, %f] m/s\n', DV1(1), DV1(2), DV1(3));
-fprintf('Magnitude of Delta-V1: %f m/s\n', norm(DV1));
-
-fprintf('Delta-V2 vector: [%f, %f, %f] m/s\n', DV2(1), DV2(2), DV2(3));
-fprintf('Magnitude of Delta-V2: %f m/s\n', norm(DV2));
-
 %% b.) Plotting different trajectories
-
 % 1. Half orbital period
 
 t_vector1 = linspace(0, tau/2, 1000); % time vector (s)
+t_vector2 = linspace(0, 2*tau, 2000); % time vector 2 (s) 
 
 for i = 1:length(t_vector1)
     t = t_vector1(i); % time (s)
@@ -47,6 +40,13 @@ for i = 1:length(t_vector1)
     r1(:,i) = Phi_rr*r0 + Phi_rv*DV1/1000; % compute the relative position (km)
 end
 
+for i = 1:length(t_vector2)
+    t = t_vector2(i); % time (s)
+    PHI=CW_TransMat(omega,t); % compute the CW matrices
+    Phi_rr = PHI(1:3,1:3); % position-to-position state transition matrix
+    Phi_rv = PHI(1:3,4:6); % position-to-velocity state transition matrix
+    r2(:,i) = Phi_rr*r0 + Phi_rv*DV1/1000; % compute the relative position (km)
+end
 
 figure;
 plot(r1(1,:),r1(2,:),'b','LineWidth',2); % plot the trajectory
@@ -57,18 +57,6 @@ grid on;
 axis equal;
 set(gca, 'FontSize', 12, 'FontName', 'Arial');
 legend('Trajectory', 'Location', 'best');
-
-
-% 2. Two orbital period
-t_vector2 = linspace(0, 2*tau, 2000); % time vector 2 (s) 
-
-for i = 1:length(t_vector2)
-    t = t_vector2(i); % time (s)
-    PHI=CW_TransMat(omega,t); % compute the CW matrices
-    Phi_rr = PHI(1:3,1:3); % position-to-position state transition matrix
-    Phi_rv = PHI(1:3,4:6); % position-to-velocity state transition matrix
-    r2(:,i) = Phi_rr*r0 + Phi_rv*DV1/1000; % compute the relative position (km)
-end
 
 figure;
 plot(r2(1,:),r2(2,:),'b','LineWidth',2); % plot the trajectory
@@ -173,14 +161,12 @@ r0 = r0_midspan;
 v0 = v0_midspan; 
 
 %Final Conditions: 
-rf = [0; -0.1; 0] * 1000; % in meters
+rf = [0; -0.1; 0]; % km
 
 %Creation of the state vector: 
 state0MC = [r0_midspan, v0_midspan]; % state vector (km, km/s)
 
-[DVx_midspan, DVy_midspan] = mid_course(omega, state0MC, rf);
-
-DV1_midspan = [DVx_midspan; DVy_midspan; 0]; 
+[DV1_midspan, DV2_midspan] = mid_course(omega, state0MC, rf); 
 
 
 % Plot the trajectory from 0 to tau/4
@@ -212,18 +198,13 @@ figure;
 hold on;
 plot(trajectory_mid1(1, :), trajectory_mid1(2, :), 'b', 'LineWidth', 2); % 0 to tau/4
 plot(trajectory_mid2(1, :), trajectory_mid2(2, :), 'r', 'LineWidth', 2); % tau/4 to tau/2
-
-% Mark the midspan point with an asterisk
-midspan_point = trajectory_mid1(:, end); % The end of the first trajectory is the midspan
-plot(midspan_point(1), midspan_point(2), 'k*', 'MarkerSize', 10, 'LineWidth', 2);
-
 xlabel('x (R-bar direction) [km]');
 ylabel('y (V-bar direction) [km]');
 title('Trajectory Segments: 0 to tau/4 and tau/4 to tau/2');
 grid on;
 axis equal;
 set(gca, 'FontSize', 12, 'FontName', 'Arial');
-legend('0 to tau/4', 'tau/4 to tau/2', 'Midspan Point', 'Location', 'best');
+legend('0 to tau/4', 'tau/4 to tau/2', 'Location', 'best');
 hold off;
 
 

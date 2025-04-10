@@ -1,4 +1,4 @@
-function [DVx, DVy] = mid_course(omega,state0MC,rf)
+function [DV(1)] = mid_course(omega,state0MC,rf)
 
     %Inputs: 
     % omega: mean angular rate (rad/s)
@@ -13,8 +13,7 @@ function [DVx, DVy] = mid_course(omega,state0MC,rf)
     n = omega; % mean angular rate rad/s
     tau = 2*pi/n; % Tiangong's orbital period (s)
     t = tau/4; % time of maneuver (s)
-    
-    rf = rf/1000; %Change from meters to kilometers. 
+
 
     %1.) 
     r0_midspan = state0MC(1:3, 1); % initial position (km)
@@ -37,8 +36,7 @@ function [DVx, DVy] = mid_course(omega,state0MC,rf)
 
     % 8. Velocity change for the first impulse
     DV1 = (v0_plus - v0_minus) * 1000; % m/s
-    DVx = DV1(1); 
-    DVy = DV1(2); 
+    DVx = 
 
 
     function [Phi_rr, Phi_rv, Phi_vr, Phi_vv] = CW_matrices(n, t)

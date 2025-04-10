@@ -2,7 +2,7 @@ function [DV1,DV2]=hopping(omega,Deltay)
 
     % Inputs:
     % omega - orbit mean angular rate (rad/s); aka 'n'
-    % Deltay - change in y position (km)
+    % Deltay - change in y position (m)
     
     % Outputs:
     % DV1 - first impulse velocity change (m/s)
@@ -14,14 +14,14 @@ function [DV1,DV2]=hopping(omega,Deltay)
     % Initial relative position
     r0 = [0; -1; 0]; % km
     % Final relative position
-    rf = [0; -0.1; 0]; % km
+    rf = r0 + [0; Deltay; 0] /1000; % km
 
     % Time of maneuver
     n = omega; % mean angular rate rad/s
     tau = 2*pi/n; % Tiangong's orbital period (s)
     t = tau/2; % time of maneuver (s)
 
-    %t = 5364;
+    
     %% Algorithm
     % 1. Determination of the CW matrices
     [Phi_rr, Phi_rv, Phi_vr, Phi_vv] = CW_matrices(n, t);

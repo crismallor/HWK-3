@@ -1,44 +1,50 @@
-function [DVx, DVy] = mid_course(omega,state0MC,rf)
+function [DV1,DV2]=hopping(omega,Deltay)
 
-    %Inputs: 
-    % omega: mean angular rate (rad/s)
-    % state0MC: mid course state vector (position and velocity) of the chaser (km, km/s)
-    % rf: final relative position (km)
+    % Inputs:
+    % omega - orbit mean angular rate (rad/s); aka 'n'
+    % Deltay - change in y position (m)
+    
+    % Outputs:
+    % DV1 - first impulse velocity change (m/s)
+    % DV2 - second impulse velocity change (m/s)
 
-    %Outputs: 
-    % DVx: Delta velocity change in x direction (m/s)
-    % DVy: Delta velocity change in y direction (m/s)
+    %% Data
 
-     % Time of maneuver
+    % Relative motion parameters
+    % Initial relative position
+    r0 = [0; -1; 0]; % km
+    % Final relative position
+    rf = r0 + Deltay/1000; % km
+
+    % Time of maneuver
     n = omega; % mean angular rate rad/s
     tau = 2*pi/n; % Tiangong's orbital period (s)
-    t = tau/4; % time of maneuver (s)
-    
-    rf = rf/1000; %Change from meters to kilometers. 
+    t = tau/2; % time of maneuver (s)
 
-    %1.) 
-    r0_midspan = state0MC(1:3, 1); % initial position (km)
-    v0_midspan = state0MC(1:3, 2); % initial velocity (km/s)
+    %t = 5364;
+    %% Algorithm
+    % 1. Determination of the CW matrices
+    [Phi_rr, Phi_rv, Phi_vr, Phi_vv] = CW_matrices(n, t);
 
-    % 2. Determination of the CW matrices
-    [Phi_rr, Phi_rv, Phi_vr, Phi_vv] = CW_matrices(omega, t); % compute the CW matrices %Duda, que tiempo pongo 0 o tau/4?
+    % 2. Initial velocity after the first impulse
+    v0_plus = inv(Phi_rv)*(rf-Phi_rr*r0);
 
-    % 3. Initial velocity after the first impulse
-    v0_plus = inv(Phi_rv)*(rf-Phi_rr*r0_midspan);
+    % 3. Final velocity before the second impulse
+    vf_minus = Phi_vr*r0 + Phi_vv*v0_plus;
 
-    % 4. Final velocity before the second impulse
-    vf_minus = Phi_vr*r0_midspan + Phi_vv*v0_plus;
+    % 4. Initial velocity before first impulse
+    v0_minus = zeros(3,1); % km/s; zeros since both the chaser and target are initially in the same circular orbit
 
-    % 5. Initial velocity before first impulse
-    v0_minus = v0_midspan; % km/s; zeros since both the chaser and target are initially in the same circular orbit
-
-    % 7. Final velocity after the second impulse
+    % 5. Final velocity after the second impulse
     vF_plus = zeros(3,1); % km/s; zeros since both the chaser and target are at the end in the same circular orbit
 
-    % 8. Velocity change for the first impulse
+    % 6. Velocity change for the first impulse
     DV1 = (v0_plus - v0_minus) * 1000; % m/s
-    DVx = DV1(1); 
-    DVy = DV1(2); 
+
+
+    % 7. Velocity change for the second impulse
+    DV2 = (vF_plus - vf_minus) * 1000; % m/s
+
 
 
     function [Phi_rr, Phi_rv, Phi_vr, Phi_vv] = CW_matrices(n, t)
@@ -73,8 +79,8 @@ function [DVx, DVy] = mid_course(omega,state0MC,rf)
                   -2*sin(n*t), 4*cos(n*t) - 3, 0;
                   0, 0, cos(n*t)];
     end
+    
 
 
 
-
-end 
+end
